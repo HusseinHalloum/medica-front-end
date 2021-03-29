@@ -6,14 +6,25 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Image,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as ImagePicker from "expo-image-picker";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
-const PatientSignUpScreen = () => {
+const PatientSignUpScreen = (props) => {
   const [address, setAddress] = useState([]);
+
+  const [firstname, setFirstname] = useState("");
+  const [lastname, setLastname] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
+  const [age, setAge] = useState("");
+  const [selectedImage, setSelectedImage] = useState(null);
   const [selectedAddress, setSelectedAddress] = useState("");
   const [selectedGender, setSelectedGender] = useState("");
 
@@ -32,8 +43,65 @@ const PatientSignUpScreen = () => {
     };
     response();
   }, []);
+
+  const openImagePickerAsync = async () => {
+    let pickerResult = await ImagePicker.launchImageLibraryAsync();
+    if (pickerResult.cancelled === true) {
+      return;
+    }
+    setSelectedImage(pickerResult.uri);
+  };
+
+  const storeData = async (token, doctor) => {
+    try {
+      await AsyncStorage.setItem("tokenPatient", token);
+      await AsyncStorage.setItem("patient", patient);
+      props.setToken(true);
+      props.setTokenPatient(true);
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const body = new FormData();
+    body.append("firstname", firstname);
+    body.append("lastname", lastname);
+    body.append("email", email);
+    body.append("password", password);
+    body.append("phone", phone);
+    body.append("age", age);
+    body.append("gender", selectedGender);
+    body.append("image", selectedImage);
+    body.append("address_id", selectedAddress);
+    console.log(body);
+    try {
+      await axios
+        .post("http://192.168.1.12:8000/api/patient-register", body, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "content-type": "application/json",
+          },
+        })
+        .then((response) => {
+          console.log(response);
+          if (response.status == 200) {
+            const token = response.data.access_token;
+            const patient = JSON.stringify(response.data.patient);
+            console.log(token);
+            console.log(patient);
+            storeData(token, patient);
+          }
+        });
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: "#f4f8ff" }}>
       <StatusBar
         style="Dark"
         backgroundColor="#f4f8ff"
@@ -51,11 +119,8 @@ const PatientSignUpScreen = () => {
             </View>
             <View>
               <TextInput
-                // value={email}
-                keyboardType="email-address"
-                // onChangeText={(email) => setEmail(email)}
-                // placeholder="Email Address"
-                placeholderTextColor="white"
+                value={firstname}
+                onChangeText={(firstname) => setFirstname(firstname)}
                 style={styles.input}
               />
             </View>
@@ -66,11 +131,8 @@ const PatientSignUpScreen = () => {
             </View>
             <View>
               <TextInput
-                // value={password}
-                // secureTextEntry={true}
-                // onChangeText={(password) => setPassword(password)}
-                placeholderTextColor="white"
-                // placeholder="Password"
+                value={lastname}
+                onChangeText={(lastname) => setLastname(lastname)}
                 style={styles.input}
               />
             </View>
@@ -81,11 +143,9 @@ const PatientSignUpScreen = () => {
             </View>
             <View>
               <TextInput
-                // value={password}
-                // secureTextEntry={true}
-                // onChangeText={(password) => setPassword(password)}
-                placeholderTextColor="white"
-                // placeholder="Password"
+                value={email}
+                keyboardType="email-address"
+                onChangeText={(email) => setEmail(email)}
                 style={styles.input}
               />
             </View>
@@ -96,11 +156,9 @@ const PatientSignUpScreen = () => {
             </View>
             <View>
               <TextInput
-                // value={password}
+                value={password}
                 secureTextEntry={true}
-                // onChangeText={(password) => setPassword(password)}
-                placeholderTextColor="white"
-                // placeholder="Password"
+                onChangeText={(password) => setPassword(password)}
                 style={styles.input}
               />
             </View>
@@ -111,13 +169,42 @@ const PatientSignUpScreen = () => {
             </View>
             <View>
               <TextInput
-                // value={password}
-                // onChangeText={(password) => setPassword(password)}
-                placeholderTextColor="white"
-                // placeholder="Password"
+                value={phone}
+                keyboardType="numeric"
+                onChangeText={(phone) => setPhone(phone)}
                 style={styles.input}
               />
             </View>
+          </View>
+          <View style={styles.inputContainer}>
+            <View style={styles.label}>
+              <Text style={styles.labelText}>Age</Text>
+            </View>
+            <View>
+              <TextInput
+                value={age}
+                keyboardType="numeric"
+                onChangeText={(age) => setAge(age)}
+                style={styles.input}
+              />
+            </View>
+          </View>
+          <View style={styles.inputContainer}>
+            <View style={styles.label}>
+              <Text style={styles.labelText}>Profile Photo</Text>
+            </View>
+            <TouchableOpacity
+              onPress={openImagePickerAsync}
+              style={styles.button}
+            >
+              <Text style={styles.buttonText}>Pick a photo</Text>
+            </TouchableOpacity>
+            {selectedImage && (
+              <Image
+                source={{ uri: selectedImage }}
+                style={{ width: 200, height: 200 }}
+              />
+            )}
           </View>
           <View style={styles.inputContainer}>
             <View style={styles.label}>
@@ -153,14 +240,12 @@ const PatientSignUpScreen = () => {
               </Picker>
             </View>
           </View>
-
-          <TouchableOpacity
-            style={styles.button}
-            //  onPress={onLogin}
-          >
-            <Text style={styles.buttonText}> Sign Up </Text>
-            {/* <Icon name="login" color="white" size={18} /> */}
-          </TouchableOpacity>
+          <View style={styles.inputContainer}>
+            <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+              <Text style={styles.buttonText}> Sign Up </Text>
+              {/* <Icon name="login" color="white" size={18} /> */}
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -186,6 +271,7 @@ const styles = StyleSheet.create({
   },
   labelText: {
     color: "rgb(0,200,215)",
+    fontFamily: "BalsamiqSans_400Regular",
     fontSize: 15,
     // textTransform: "uppercase",
   },
@@ -221,6 +307,8 @@ const styles = StyleSheet.create({
     // color: "rgb(0,200,215)",
     borderBottomWidth: 2,
     borderColor: "rgb(0,200,215)",
+    color: "#192a56",
+    fontFamily: "BalsamiqSans_400Regular",
     // borderRadius: 5,
   },
 

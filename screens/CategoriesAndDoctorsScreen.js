@@ -11,6 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { Dimensions } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import axios from "axios";
 
@@ -20,6 +21,14 @@ const CategoriesAndDoctorsScreen = (props) => {
   const width = Dimensions.get("window").width; //full width
 
   useEffect(() => {
+    AsyncStorage.getAllKeys((err, keys) => {
+      AsyncStorage.multiGet(keys, (error, stores) => {
+        stores.map((result, i, store) => {
+          console.log({ [store[i][0]]: store[i][1] });
+          return true;
+        });
+      });
+    });
     async function fetchCategoryData() {
       await axios
         .get("http://192.168.1.12:8000/api/category")

@@ -15,11 +15,22 @@ import DoctorDetailsScreen from "../screens/DoctorDetailsScreen";
 import PatientAuth from "./AuthNavigator/PatientAuth";
 import DoctorAuth from "./AuthNavigator/DoctorAuth";
 import BookAppointmentScreen from "../screens/BookAppointmentScreen";
+import DoctorProfileChangePassword from "../screens/DoctorProfile/DoctorProfileChangePassword";
+import DoctorScheduleScreen from "../screens/DoctorProfile/DoctorScheduleScreen";
+import DoctorServicesScreen from "../screens/DoctorProfile/DoctorServicesScreen";
+import ProfileDoctorEditScreen from "../screens/DoctorProfile/ProfileDoctorEditScreen";
+import ProfileDoctorMainScreen from "../screens/DoctorProfile/ProfileDoctorMainScreen";
+import ProfilePatientEditScreen from "../screens/PatientProfile/ProfilePatientEditScreen";
+import ProfilePatientMainScreen from "../screens/PatientProfile/ProfilePatientMainScreen";
+import PatientProfileChangePassword from "../screens/PatientProfile/PatientProfileChangePassword";
+import DoctorAppointmentHistory from "../screens/DoctorAppointmentHistory";
+import PatientAppointmentHistory from "../screens/PatientAppointmentHistory";
 
 const Navigation = () => {
-  const [token, setToken] = useState(false);
+  const [token, setToken] = useState(true);
   const [tokenPatient, setTokenPatient] = useState(false);
-  const [tokenDoctor, setTokenDoctor] = useState(false);
+  const [tokenDoctor, setTokenDoctor] = useState(true);
+  const [reRender, setReRender] = useState(false);
 
   let options = {
     headerStyle: {
@@ -43,7 +54,7 @@ const Navigation = () => {
       backgroundColor: "#192a56",
     },
   };
-  console.log(token);
+
   const Tab = createBottomTabNavigator();
   const OverviewScreen = (props) => {
     return (
@@ -68,24 +79,74 @@ const Navigation = () => {
           activeTintColor: "#00c8d7",
           inactiveTintColor: "#192a56",
           keyboardHidesTabBar: true,
-          labelStyle: { fontFamily: "BalsamiqSans_700Bold", paddingBottom: 5 },
+          labelStyle: {
+            fontFamily: "BalsamiqSans_700Bold",
+            paddingBottom: 5,
+          },
+          style: {
+            backgroundColor: "#f4f8ff",
+          },
 
           // inactiveTintColor: "#f4f8ff",
         }}
       >
         <Tab.Screen name="Booking">
-          {(props) => <BookingScreen {...props} />}
+          {token
+            ? tokenPatient
+              ? (props) => <PatientAppointmentScreen {...props} />
+              : tokenDoctor
+              ? (props) => <DoctorAppointmentScreen {...props} />
+              : (props) => <NoBookingScreen {...props} />
+            : (props) => <NoBookingScreen {...props} />}
         </Tab.Screen>
         <Tab.Screen name="Home">
           {(props) => <HomeScreen {...props} />}
         </Tab.Screen>
         <Tab.Screen name="Profile">
-          {(props) => <ProfileStackScreen {...props} />}
+          {token
+            ? tokenPatient
+              ? (props) => <PatientProfileScreen {...props} />
+              : tokenDoctor
+              ? (props) => (
+                  <DoctorProfileScreen
+                    {...props}
+                    setReRender={setReRender}
+                    reRender={reRender}
+                  />
+                )
+              : (props) => <ProfileStackScreen {...props} />
+            : (props) => <ProfileStackScreen {...props} />}
         </Tab.Screen>
       </Tab.Navigator>
     );
   };
-
+  function PatientAppointmentScreen() {
+    return (
+      <Main.Navigator>
+        <Main.Screen name="Patient-Booking">
+          {(props) => <PatientAppointmentHistory {...props} />}
+        </Main.Screen>
+      </Main.Navigator>
+    );
+  }
+  function DoctorAppointmentScreen() {
+    return (
+      <Main.Navigator>
+        <Main.Screen name="Doctor-Booking">
+          {(props) => <DoctorAppointmentHistory {...props} />}
+        </Main.Screen>
+      </Main.Navigator>
+    );
+  }
+  function NoBookingScreen() {
+    return (
+      <Main.Navigator>
+        <Main.Screen name="Booking-History">
+          {(props) => <BookingScreen {...props} />}
+        </Main.Screen>
+      </Main.Navigator>
+    );
+  }
   const Main = createStackNavigator();
   function HomeScreen() {
     return (
@@ -159,12 +220,69 @@ const Navigation = () => {
     );
   }
 
+  function PatientProfileScreen(props) {
+    return (
+      <Main.Navigator>
+        <Main.Screen name="Patient Profile">
+          {() => (
+            <ProfilePatientMainScreen
+              setToken={setToken}
+              setTokenPatient={setTokenPatient}
+              {...props}
+              reRender={props.reRender}
+            />
+          )}
+        </Main.Screen>
+        <Main.Screen name="Edit Your Profile">
+          {() => <ProfilePatientEditScreen {...props} />}
+        </Main.Screen>
+        <Main.Screen name="Patient Change Password">
+          {(props) => <PatientProfileChangePassword {...props} />}
+        </Main.Screen>
+      </Main.Navigator>
+    );
+  }
+  function DoctorProfileScreen(props) {
+    return (
+      <Main.Navigator>
+        <Main.Screen name="Doctor Profile">
+          {(props) => (
+            <ProfileDoctorMainScreen
+              setToken={setToken}
+              setTokenDoctor={setTokenDoctor}
+              render={reRender}
+              {...props}
+            />
+          )}
+        </Main.Screen>
+        <Main.Screen name="Edit-Your-Informations">
+          {(props) => (
+            <ProfileDoctorEditScreen
+              {...props}
+              setReRender={setReRender}
+              render={reRender}
+            />
+          )}
+        </Main.Screen>
+        <Main.Screen name="Services">
+          {(props) => <DoctorServicesScreen {...props} />}
+        </Main.Screen>
+        <Main.Screen name="Doctor-Schedule">
+          {(props) => <DoctorScheduleScreen {...props} />}
+        </Main.Screen>
+        <Main.Screen name="Doctor-Change-Password">
+          {(props) => <DoctorProfileChangePassword {...props} />}
+        </Main.Screen>
+      </Main.Navigator>
+    );
+  }
+
   const TopTab = createMaterialTopTabNavigator();
   function ProfileTabScreen() {
     return (
       <TopTab.Navigator
         tabBarOptions={{
-          activeTintColor: "white",
+          activeTintColor: "#f4f8ff",
           inactiveTintColor: "#00c8d7",
           indicatorStyle: {
             height: null,
@@ -174,7 +292,10 @@ const Navigation = () => {
           },
           style: {
             borderColor: "#00c8d7",
-            backgroundColor: "white",
+            backgroundColor: "#f4f8ff",
+          },
+          labelStyle: {
+            fontFamily: "BalsamiqSans_400Regular",
           },
           tabStyle: {
             justifyContent: "center",
@@ -191,7 +312,13 @@ const Navigation = () => {
           )}
         </TopTab.Screen>
         <TopTab.Screen name="Doctor">
-          {(props) => <DoctorAuth {...props} />}
+          {(props) => (
+            <DoctorAuth
+              {...props}
+              setToken={setToken}
+              setTokenDoctor={setTokenDoctor}
+            />
+          )}
         </TopTab.Screen>
       </TopTab.Navigator>
     );

@@ -78,7 +78,13 @@ const PatientAuth = (props) => {
           headerShown: false,
         }}
       >
-        {(props) => <PatientSignUpScreen {...props} />}
+        {(props) => (
+          <PatientSignUpScreen
+            {...props}
+            setToken={props.setToken}
+            setTokenPatient={props.setTokenPatient}
+          />
+        )}
       </Stack.Screen>
     </Stack.Navigator>
   );

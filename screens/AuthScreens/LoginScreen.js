@@ -72,11 +72,28 @@ const LoginScreen = (props) => {
           <Text style={styles.buttonText}> Login </Text>
         </TouchableOpacity>
         <View style={styles.flex}>
-          <Text style={{ fontSize: 18 }}>Don't have an account ?</Text>
+          <Text
+            style={{
+              fontSize: 18,
+              fontFamily: "BalsamiqSans_400Regular",
+              color: "#192a56",
+            }}
+          >
+            Don't have an account ?
+          </Text>
           <TouchableOpacity
             onPress={() => props.navigation.navigate(props.name)}
           >
-            <Text style={{ fontWeight: "bold", fontSize: 18 }}> Sign Up</Text>
+            <Text
+              style={{
+                fontFamily: "BalsamiqSans_700Bold",
+                fontSize: 18,
+                color: "#192a56",
+              }}
+            >
+              {" "}
+              Sign Up
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -89,7 +106,7 @@ const styles = StyleSheet.create({
     height: "100%",
     backgroundColor: "#f4f8ff",
     flex: 1,
-    marginTop: 50,
+    marginTop: 20,
   },
   contentContainer: {
     alignItems: "center",
@@ -105,6 +122,8 @@ const styles = StyleSheet.create({
   labelText: {
     color: "rgb(0,200,215)",
     fontSize: 15,
+    fontFamily: "BalsamiqSans_400Regular",
+
     // textTransform: "uppercase",
   },
   button: {
@@ -127,18 +146,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     textTransform: "uppercase",
+    fontFamily: "BalsamiqSans_400Regular",
   },
   input: {
     height: 40,
     width: 280,
-    fontSize: 15,
+    fontSize: 16,
     padding: 10,
+    paddingLeft: 0,
     marginBottom: 0,
     // marginVertical: 1,
     // color: "rgb(0,200,215)",
     borderBottomWidth: 2,
     borderColor: "rgb(0,200,215)",
     // borderRadius: 5,
+    fontFamily: "BalsamiqSans_400Regular",
+    color: "#192a56",
   },
 
   inputContainer: {

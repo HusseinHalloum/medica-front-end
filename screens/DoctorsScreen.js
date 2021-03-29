@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
   },
   item: {
     margin: 5,
-    paddingTop: 40,
+    paddingTop: 60,
     width: 170,
   },
   itemInside: {
@@ -101,15 +101,15 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   photoWrapper: {
-    marginTop: -40,
+    marginTop: -60,
   },
   itemPhoto: {
     width: 80,
-    height: 80,
-    borderRadius: 80 / 2,
+    height: 100,
+    // borderRadius: 80 / 2,
     margin: 10,
-    borderColor: "#00c8d7",
-    borderWidth: 2,
+    // borderColor: "#00c8d7",
+    // borderWidth: 2,
     // marginTop: -20,
   },
 

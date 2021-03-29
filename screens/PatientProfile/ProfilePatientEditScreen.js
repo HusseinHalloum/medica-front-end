@@ -5,45 +5,31 @@ import {
   StyleSheet,
   TextInput,
   TouchableOpacity,
-  Image,
   ScrollView,
+  Image,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { Icon } from "react-native-elements";
+import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
-const PatientSignUpScreen = (props) => {
+const ProfilePatientEditScreen = (props) => {
   const [address, setAddress] = useState([]);
-  const [category, setCategory] = useState([]);
 
   const [firstname, setFirstname] = useState("");
   const [lastname, setLastname] = useState("");
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
-  const [experience, setExperience] = useState("");
-  const [price, setPrice] = useState("");
-  const [selectedAddress, setSelectedAddress] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [age, setAge] = useState("");
   const [selectedImage, setSelectedImage] = useState(null);
-
-  console.log(selectedCategory);
+  const [selectedAddress, setSelectedAddress] = useState("");
+  const [selectedGender, setSelectedGender] = useState("");
 
   const addressList = address.map((address) => {
     return (
       <Picker.Item label={address.name} value={address.id} key={address.id} />
-    );
-  });
-  const categoryList = category.map((category) => {
-    return (
-      <Picker.Item
-        label={category.name}
-        value={category.id}
-        key={category.id}
-      />
     );
   });
   useEffect(() => {
@@ -54,15 +40,7 @@ const PatientSignUpScreen = (props) => {
           setAddress(response.data.address);
         });
     };
-    const responseCategory = async () => {
-      return await axios
-        .get("http://192.168.1.12:8000/api/category")
-        .then((response) => {
-          setCategory(response.data.category);
-        });
-    };
     response();
-    responseCategory();
   }, []);
 
   const openImagePickerAsync = async () => {
@@ -75,53 +53,63 @@ const PatientSignUpScreen = (props) => {
 
   const storeData = async (token, doctor) => {
     try {
-      await AsyncStorage.setItem("tokenDoctor", token);
-      await AsyncStorage.setItem("doctor", doctor);
+      await AsyncStorage.setItem("tokenPatient", token);
+      await AsyncStorage.setItem("patient", patient);
       props.setToken(true);
-      props.setTokenDoctor(true);
+      props.setTokenPatient(true);
     } catch (e) {
       console.log(e);
     }
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const body = new FormData();
     body.append("firstname", firstname);
     body.append("lastname", lastname);
     body.append("email", email);
-    body.append("password", password);
     body.append("phone", phone);
-    body.append("experience", experience);
-    body.append("price", price);
+    body.append("age", age);
+    body.append("gender", selectedGender);
     body.append("image", selectedImage);
-    body.append("category_id", selectedCategory);
     body.append("address_id", selectedAddress);
     console.log(body);
     try {
       await axios
-        .post("http://192.168.1.12:8000/api/doctor-register", body, {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "content-type": "application/json",
-          },
-        })
+        .post(
+          `http://192.168.1.12:8000/api/update-patient/${props.route.params.patient.id}`,
+          body,
+          {
+            method: "PUT",
+            headers: {
+              Accept: "application/json",
+              "content-type": "application/json",
+            },
+          }
+        )
         .then((response) => {
           console.log(response);
           if (response.status == 200) {
             const token = response.data.access_token;
-            const doctor = JSON.stringify(response.data.doctor);
+            const patient = JSON.stringify(response.data.patient);
             console.log(token);
-            console.log(doctor);
-            storeData(token, doctor);
+            console.log(patient);
+            storeData(token, patient);
           }
         });
     } catch (err) {
       console.log(err);
     }
   };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f4f8ff" }}>
+      <StatusBar
+        style="Dark"
+        backgroundColor="#f4f8ff"
+        translucent={true}
+        barStyle="default"
+      />
       <ScrollView
         contentContainerStyle={styles.contentContainer}
         style={styles.container}
@@ -135,7 +123,6 @@ const PatientSignUpScreen = (props) => {
               <TextInput
                 value={firstname}
                 onChangeText={(firstname) => setFirstname(firstname)}
-                placeholderTextColor="white"
                 style={styles.input}
               />
             </View>
@@ -148,7 +135,6 @@ const PatientSignUpScreen = (props) => {
               <TextInput
                 value={lastname}
                 onChangeText={(lastname) => setLastname(lastname)}
-                placeholderTextColor="white"
                 style={styles.input}
               />
             </View>
@@ -168,58 +154,26 @@ const PatientSignUpScreen = (props) => {
           </View>
           <View style={styles.inputContainer}>
             <View style={styles.label}>
-              <Text style={styles.labelText}>Password</Text>
-            </View>
-            <View>
-              <TextInput
-                value={password}
-                secureTextEntry={true}
-                onChangeText={(password) => setPassword(password)}
-                placeholderTextColor="white"
-                // placeholder="Password"
-                style={styles.input}
-              />
-            </View>
-          </View>
-          <View style={styles.inputContainer}>
-            <View style={styles.label}>
               <Text style={styles.labelText}>Phone</Text>
             </View>
             <View>
               <TextInput
-                keyboardType="phone-pad"
                 value={phone}
-                onChangeText={(phone) => setPhone(phone)}
-                placeholderTextColor="white"
-                // placeholder="Password"
-                style={styles.input}
-              />
-            </View>
-          </View>
-          <View style={styles.inputContainer}>
-            <View style={styles.label}>
-              <Text style={styles.labelText}>Experience</Text>
-            </View>
-            <View>
-              <TextInput
-                value={experience}
-                onChangeText={(experience) => setExperience(experience)}
-                placeholderTextColor="white"
-                style={styles.input}
-              />
-            </View>
-          </View>
-          <View style={styles.inputContainer}>
-            <View style={styles.label}>
-              <Text style={styles.labelText}>Price</Text>
-            </View>
-            <View>
-              <TextInput
                 keyboardType="numeric"
-                value={price}
-                onChangeText={(price) => setPrice(price)}
-                placeholderTextColor="white"
-                // placeholder="Password"
+                onChangeText={(phone) => setPhone(phone)}
+                style={styles.input}
+              />
+            </View>
+          </View>
+          <View style={styles.inputContainer}>
+            <View style={styles.label}>
+              <Text style={styles.labelText}>Age</Text>
+            </View>
+            <View>
+              <TextInput
+                value={age}
+                keyboardType="numeric"
+                onChangeText={(age) => setAge(age)}
                 style={styles.input}
               />
             </View>
@@ -243,18 +197,19 @@ const PatientSignUpScreen = (props) => {
           </View>
           <View style={styles.inputContainer}>
             <View style={styles.label}>
-              <Text style={styles.labelText}>Category</Text>
+              <Text style={styles.labelText}>Gender</Text>
             </View>
             <View>
               <Picker
-                style={{ borderWidth: 1, borderColor: "#00c8d7" }}
+                itemStyle={{ color: "#00c8d7" }}
                 mode="dropdown"
-                selectedValue={selectedCategory}
-                onValueChange={(itemValue, itemIndex) => {
-                  setSelectedCategory(itemValue);
-                }}
+                selectedValue={selectedGender}
+                onValueChange={(itemValue, itemIndex) =>
+                  setSelectedGender(itemValue)
+                }
               >
-                {categoryList}
+                <Picker.Item label="Male" value="Male" />
+                <Picker.Item label="Female" value="Female" />
               </Picker>
             </View>
           </View>
@@ -274,7 +229,6 @@ const PatientSignUpScreen = (props) => {
               </Picker>
             </View>
           </View>
-
           <View style={styles.inputContainer}>
             <TouchableOpacity style={styles.button} onPress={handleSubmit}>
               <Text style={styles.buttonText}> Sign Up </Text>
@@ -305,9 +259,8 @@ const styles = StyleSheet.create({
     // marginTop: 10,
   },
   labelText: {
-    fontFamily: "BalsamiqSans_400Regular",
-
     color: "rgb(0,200,215)",
+    fontFamily: "BalsamiqSans_400Regular",
     fontSize: 15,
     // textTransform: "uppercase",
   },
@@ -331,7 +284,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     textTransform: "uppercase",
-    fontFamily: "BalsamiqSans_400Regular",
   },
   input: {
     height: 40,
@@ -344,9 +296,9 @@ const styles = StyleSheet.create({
     // color: "rgb(0,200,215)",
     borderBottomWidth: 2,
     borderColor: "rgb(0,200,215)",
-    // borderRadius: 5,
     color: "#192a56",
     fontFamily: "BalsamiqSans_400Regular",
+    // borderRadius: 5,
   },
 
   inputContainer: {
@@ -368,4 +320,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PatientSignUpScreen;
+export default ProfilePatientEditScreen;

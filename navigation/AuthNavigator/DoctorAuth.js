@@ -5,7 +5,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import LoginScreen from "../../screens/AuthScreens/LoginScreen";
 import DoctorSignUpScreen from "../../screens/AuthScreens/DoctorSignUpScreen";
 
-export default function DoctorAuth() {
+export default function DoctorAuth(props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -76,7 +76,13 @@ export default function DoctorAuth() {
           headerShown: false,
         }}
       >
-        {(props) => <DoctorSignUpScreen {...props} />}
+        {(props) => (
+          <DoctorSignUpScreen
+            {...props}
+            setToken={props.setToken}
+            setTokenDoctor={props.setTokenDoctor}
+          />
+        )}
       </Stack.Screen>
     </Stack.Navigator>
   );

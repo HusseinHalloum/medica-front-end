@@ -9,28 +9,34 @@ import {
   ScrollView,
 } from "react-native";
 import { Picker } from "@react-native-picker/picker";
-import { Icon } from "react-native-elements";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as ImagePicker from "expo-image-picker";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 
-const PatientSignUpScreen = (props) => {
+const ProfileDoctorEditScreen = (props) => {
+  // const { setReRender } = props.setReRender;
+
   const [address, setAddress] = useState([]);
   const [category, setCategory] = useState([]);
 
-  const [firstname, setFirstname] = useState("");
-  const [lastname, setLastname] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [phone, setPhone] = useState("");
-  const [experience, setExperience] = useState("");
-  const [price, setPrice] = useState("");
-  const [selectedAddress, setSelectedAddress] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
+  const [firstname, setFirstname] = useState(
+    props.route.params.doctor.firstname
+  );
+  const [lastname, setLastname] = useState(props.route.params.doctor.lastname);
+  const [email, setEmail] = useState(props.route.params.doctor.email);
+  const [phone, setPhone] = useState(props.route.params.doctor.phone);
+  const [experience, setExperience] = useState(
+    props.route.params.doctor.experience
+  );
+  const [price, setPrice] = useState(props.route.params.doctor.price);
+  const [selectedAddress, setSelectedAddress] = useState(
+    props.route.params.doctor.address_id
+  );
+  const [selectedCategory, setSelectedCategory] = useState(
+    props.route.params.doctor.category_id
+  );
   const [selectedImage, setSelectedImage] = useState(null);
-
-  console.log(selectedCategory);
 
   const addressList = address.map((address) => {
     return (
@@ -73,23 +79,12 @@ const PatientSignUpScreen = (props) => {
     setSelectedImage(pickerResult.uri);
   };
 
-  const storeData = async (token, doctor) => {
-    try {
-      await AsyncStorage.setItem("tokenDoctor", token);
-      await AsyncStorage.setItem("doctor", doctor);
-      props.setToken(true);
-      props.setTokenDoctor(true);
-    } catch (e) {
-      console.log(e);
-    }
-  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     const body = new FormData();
     body.append("firstname", firstname);
     body.append("lastname", lastname);
     body.append("email", email);
-    body.append("password", password);
     body.append("phone", phone);
     body.append("experience", experience);
     body.append("price", price);
@@ -99,27 +94,28 @@ const PatientSignUpScreen = (props) => {
     console.log(body);
     try {
       await axios
-        .post("http://192.168.1.12:8000/api/doctor-register", body, {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "content-type": "application/json",
-          },
-        })
-        .then((response) => {
-          console.log(response);
-          if (response.status == 200) {
-            const token = response.data.access_token;
-            const doctor = JSON.stringify(response.data.doctor);
-            console.log(token);
-            console.log(doctor);
-            storeData(token, doctor);
+        .post(
+          `http://192.168.1.12:8000/api/update-doctor/${props.route.params.doctor.id}?_method=PUT`,
+
+          body,
+          {
+            headers: {
+              Accept: "application/json",
+              "content-type": "application/json",
+            },
           }
+        )
+        .then((response) => {
+          AsyncStorage.setItem("doctor", JSON.stringify(response.data.doctor));
+          props.setReRender(!props.render);
+          alert("successfully updated !!");
+          props.navigation.goBack();
         });
     } catch (err) {
       console.log(err);
     }
   };
+
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: "#f4f8ff" }}>
       <ScrollView
@@ -166,21 +162,7 @@ const PatientSignUpScreen = (props) => {
               />
             </View>
           </View>
-          <View style={styles.inputContainer}>
-            <View style={styles.label}>
-              <Text style={styles.labelText}>Password</Text>
-            </View>
-            <View>
-              <TextInput
-                value={password}
-                secureTextEntry={true}
-                onChangeText={(password) => setPassword(password)}
-                placeholderTextColor="white"
-                // placeholder="Password"
-                style={styles.input}
-              />
-            </View>
-          </View>
+
           <View style={styles.inputContainer}>
             <View style={styles.label}>
               <Text style={styles.labelText}>Phone</Text>
@@ -277,7 +259,7 @@ const PatientSignUpScreen = (props) => {
 
           <View style={styles.inputContainer}>
             <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-              <Text style={styles.buttonText}> Sign Up </Text>
+              <Text style={styles.buttonText}> Update </Text>
               {/* <Icon name="login" color="white" size={18} /> */}
             </TouchableOpacity>
           </View>
@@ -368,4 +350,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default PatientSignUpScreen;
+export default ProfileDoctorEditScreen;
